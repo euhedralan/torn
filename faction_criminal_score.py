@@ -39,7 +39,9 @@ import requests
 # ── Config ────────────────────────────────────────────────────────────────────
 
 FACTION_ID    = 50888
-API_KEY       = os.environ.get("TORN_API_KEY", "HGJzKIi0YS2qLWsD")
+API_KEY       = os.environ.get("TORN_API_KEY")
+if not API_KEY:
+         sys.exit("Set TORN_API_KEY environment variable before running.")
 TORN_V1       = "https://api.torn.com"
 TORN_V2       = "https://api.torn.com/v2"
 REQUEST_DELAY = 0.7
