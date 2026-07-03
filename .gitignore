@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Local dev databases (committed intentionally by the Action — do not ignore)
+# torn_tracker_50888.db   ← kept in repo so GitHub Action retains history
+
+# Other local DBs that shouldn't go up
+torn_recruitment.db
+
+# Scratch exports
+cpr_export.json
+cpr_heatmap_*.png
+recruitment_*.csv
