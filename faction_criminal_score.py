@@ -412,7 +412,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     top = FIG_H
     ax.add_patch(patches.Rectangle((0, top - HDR_H), 1, HDR_H, fc=HDR_BG, zorder=1))
     ax.text(0.5, top - HDR_H * 0.38,
-            f"FACTION {FACTION_ID}  —  CRIMINAL SCOREBOARD",
+            "CRIMINAL SCOREBOARD",
             ha="center", va="center", fontsize=16, fontweight="bold",
             color=ACCENT, fontfamily="monospace", zorder=2)
     ax.text(0.5, top - HDR_H * 0.75, period_label,
@@ -470,8 +470,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
             ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
     ax.text(0.5, FOOT_H * 0.28,
-            "■ Green: Nrv≥400  NRfl≥1  Can≥3  Alco≥24  Consist≥80%"
-            "     ■ Yellow: moderate     ■ Red: below",
+            "Nrv=Nerve  NRfl=Nerve Refill  Can=Cannabis  Alco=Alcohol  Consist=Consistency",
             ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
 

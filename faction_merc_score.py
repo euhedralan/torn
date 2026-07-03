@@ -347,7 +347,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     top = FIG_H
     ax.add_patch(patches.Rectangle((0, top - HDR_H), 1, HDR_H, fc=HDR_BG, zorder=1))
     ax.text(0.5, top - HDR_H * 0.38,
-            f"FACTION {FACTION_ID}  —  MERCENARY SCOREBOARD",
+            "MERCENARY SCOREBOARD",
             ha="center", va="center", fontsize=16, fontweight="bold",
             color=ACCENT, fontfamily="monospace", zorder=2)
     ax.text(0.5, top - HDR_H * 0.75, period_label,
@@ -404,7 +404,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
             ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
     ax.text(0.5, FOOT_H * 0.28,
-            "■ Green: XAN≥2  REF≥1  LSD≥0.5  CAN≥5  ATK≥20     ■ Yellow: moderate     ■ Red: below",
+            "XAN=Xanax  REF=Energy Refill  LSD=LSD  CAN=Cans  ATK=Attacks",
             ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
 
