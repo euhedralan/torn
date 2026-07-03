@@ -39,9 +39,7 @@ import requests
 # ── Config ────────────────────────────────────────────────────────────────────
 
 FACTION_ID    = 50888
-API_KEY       = os.environ.get("TORN_API_KEY")
-if not API_KEY:
-         sys.exit("Set TORN_API_KEY environment variable before running.")
+API_KEY       = os.environ.get("TORN_API_KEY", "HGJzKIi0YS2qLWsD")
 TORN_V1       = "https://api.torn.com"
 TORN_V2       = "https://api.torn.com/v2"
 REQUEST_DELAY = 0.7
@@ -395,11 +393,11 @@ def _stat_color(key: str, val) -> str:
 def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     n = len(rows)
 
-    HDR_H  = 0.75
-    COL_H  = 0.40
-    ROW_H  = 0.38
-    FOOT_H = 0.52
-    FIG_W  = 13.0
+    HDR_H  = 0.85
+    COL_H  = 0.50
+    ROW_H  = 0.48
+    FOOT_H = 0.80
+    FIG_W  = 9.5
     FIG_H  = HDR_H + COL_H + n * ROW_H + FOOT_H
 
     fig = plt.figure(figsize=(FIG_W, FIG_H))
@@ -415,10 +413,10 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     ax.add_patch(patches.Rectangle((0, top - HDR_H), 1, HDR_H, fc=HDR_BG, zorder=1))
     ax.text(0.5, top - HDR_H * 0.38,
             f"FACTION {FACTION_ID}  —  CRIMINAL SCOREBOARD",
-            ha="center", va="center", fontsize=13, fontweight="bold",
+            ha="center", va="center", fontsize=16, fontweight="bold",
             color=ACCENT, fontfamily="monospace", zorder=2)
     ax.text(0.5, top - HDR_H * 0.75, period_label,
-            ha="center", va="center", fontsize=9,
+            ha="center", va="center", fontsize=11,
             color=DIM, fontfamily="monospace", zorder=2)
     ax.plot([0, 1], [top - HDR_H, top - HDR_H], color=SEP, lw=1.0, zorder=3)
 
@@ -428,7 +426,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     x = 0.0
     for label, key, w, _ in _COLS:
         ax.text(x + w / 2, top - COL_H / 2, label,
-                ha="center", va="center", fontsize=9, fontweight="bold",
+                ha="center", va="center", fontsize=12, fontweight="bold",
                 color=WHITE, fontfamily="monospace", zorder=2)
         x += w
     ax.plot([0, 1], [top - COL_H, top - COL_H], color=SEP, lw=0.8, zorder=3)
@@ -457,7 +455,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
                 color = DIM
 
             ax.text(x + w / 2, y + ROW_H / 2, text,
-                    ha="center", va="center", fontsize=9,
+                    ha="center", va="center", fontsize=12,
                     color=color, fontfamily="monospace", zorder=2)
             x += w
 
@@ -466,14 +464,15 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     # footer
     ax.add_patch(patches.Rectangle((0, 0), 1, FOOT_H, fc=FOOT_BG, zorder=1))
     ax.plot([0, 1], [FOOT_H, FOOT_H], color=SEP, lw=0.8, zorder=3)
-    formula = (
-        f"Score = (CrimeNrv/d + NRfl/d×{NERVE_PER_REFILL}"
-        f" + Can/d×{NERVE_PER_CANNABIS} + Alco/d×{NERVE_PER_ALCOHOL}) × consistency"
-        f"     ■ Green: Nrv≥400  NRfl≥1  Can≥3  Alco≥24  Consist≥80%"
-        f"     ■ Yellow: moderate     ■ Red: below"
-    )
-    ax.text(0.5, FOOT_H / 2, formula,
-            ha="center", va="center", fontsize=8,
+    ax.text(0.5, FOOT_H * 0.72,
+            f"Score = (CrimeNrv/d + NRfl/d×{NERVE_PER_REFILL}"
+            f" + Can/d×{NERVE_PER_CANNABIS} + Alco/d×{NERVE_PER_ALCOHOL}) × consistency",
+            ha="center", va="center", fontsize=9,
+            color=DIM, fontfamily="monospace", zorder=2)
+    ax.text(0.5, FOOT_H * 0.28,
+            "■ Green: Nrv≥400  NRfl≥1  Can≥3  Alco≥24  Consist≥80%"
+            "     ■ Yellow: moderate     ■ Red: below",
+            ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
 
     plt.savefig(output_path, dpi=150, bbox_inches="tight",

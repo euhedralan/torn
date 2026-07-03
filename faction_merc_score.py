@@ -39,9 +39,7 @@ import requests
 # ── Config ────────────────────────────────────────────────────────────────────
 
 FACTION_ID   = 50888
-API_KEY      = os.environ.get("TORN_API_KEY")
-if not API_KEY:
-         sys.exit("Set TORN_API_KEY environment variable before running.")
+API_KEY      = os.environ.get("TORN_API_KEY", "HGJzKIi0YS2qLWsD")
 TORN_V1      = "https://api.torn.com"
 TORN_V2      = "https://api.torn.com/v2"
 REQUEST_DELAY = 0.7
@@ -330,11 +328,11 @@ def _stat_color(key: str, val: float) -> str:
 def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     n = len(rows)
 
-    HDR_H  = 0.75   # title bar
-    COL_H  = 0.40   # column header row
-    ROW_H  = 0.38   # data row
-    FOOT_H = 0.52   # formula footer
-    FIG_W  = 13.0
+    HDR_H  = 0.85   # title bar
+    COL_H  = 0.50   # column header row
+    ROW_H  = 0.48   # data row
+    FOOT_H = 0.80   # formula footer (two lines)
+    FIG_W  = 9.5
     FIG_H  = HDR_H + COL_H + n * ROW_H + FOOT_H
 
     fig = plt.figure(figsize=(FIG_W, FIG_H))
@@ -350,10 +348,10 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     ax.add_patch(patches.Rectangle((0, top - HDR_H), 1, HDR_H, fc=HDR_BG, zorder=1))
     ax.text(0.5, top - HDR_H * 0.38,
             f"FACTION {FACTION_ID}  —  MERCENARY SCOREBOARD",
-            ha="center", va="center", fontsize=13, fontweight="bold",
+            ha="center", va="center", fontsize=16, fontweight="bold",
             color=ACCENT, fontfamily="monospace", zorder=2)
     ax.text(0.5, top - HDR_H * 0.75, period_label,
-            ha="center", va="center", fontsize=9,
+            ha="center", va="center", fontsize=11,
             color=DIM, fontfamily="monospace", zorder=2)
     ax.plot([0, 1], [top - HDR_H, top - HDR_H], color=SEP, lw=1.0, zorder=3)
 
@@ -363,7 +361,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     x = 0.0
     for label, key, w, _ in _COLS:
         ax.text(x + w / 2, top - COL_H / 2, label,
-                ha="center", va="center", fontsize=9, fontweight="bold",
+                ha="center", va="center", fontsize=12, fontweight="bold",
                 color=WHITE, fontfamily="monospace", zorder=2)
         x += w
     ax.plot([0, 1], [top - COL_H, top - COL_H], color=SEP, lw=0.8, zorder=3)
@@ -392,7 +390,7 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
                 color = DIM
 
             ax.text(x + w / 2, y + ROW_H / 2, txt,
-                    ha="center", va="center", fontsize=9,
+                    ha="center", va="center", fontsize=12,
                     color=color, fontfamily="monospace", zorder=2)
             x += w
 
@@ -401,14 +399,13 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     # footer ───────────────────────────────────────────────────────────────────
     ax.add_patch(patches.Rectangle((0, 0), 1, FOOT_H, fc=FOOT_BG, zorder=1))
     ax.plot([0, 1], [FOOT_H, FOOT_H], color=SEP, lw=0.8, zorder=3)
-    formula = (
-        f"Score = XAN/d×{W_XAN} + REF/d×{W_REF} + LSD/d×{W_LSD}"
-        f" + CAN/d×{W_CANS} + ATK/d×{W_ATK}"
-        f"     ■ Green: XAN≥2  REF≥1  LSD≥0.5  CAN≥5  ATK≥20"
-        f"     ■ Yellow: moderate     ■ Red: below target"
-    )
-    ax.text(0.5, FOOT_H / 2, formula,
-            ha="center", va="center", fontsize=8,
+    ax.text(0.5, FOOT_H * 0.72,
+            f"Score = XAN/d×{W_XAN} + REF/d×{W_REF} + LSD/d×{W_LSD} + CAN/d×{W_CANS} + ATK/d×{W_ATK}",
+            ha="center", va="center", fontsize=9,
+            color=DIM, fontfamily="monospace", zorder=2)
+    ax.text(0.5, FOOT_H * 0.28,
+            "■ Green: XAN≥2  REF≥1  LSD≥0.5  CAN≥5  ATK≥20     ■ Yellow: moderate     ■ Red: below",
+            ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
 
     plt.savefig(output_path, dpi=150, bbox_inches="tight",
