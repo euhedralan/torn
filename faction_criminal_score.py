@@ -61,6 +61,7 @@ NERVE_WEIGHTS = {
 NERVE_PER_REFILL  = 150   # approximate nerve bar size
 NERVE_PER_CANNABIS =  50  # crime-effectiveness value per cannabis
 NERVE_PER_ALCOHOL  =   5  # stat-boost value per alcohol drink
+NERVE_PER_BUST     =   5  # nerve cost of a bust
 
 MIN_INTERVALS_FOR_CONSISTENCY = 6
 CONSISTENCY_BONUS = 0.30
@@ -71,6 +72,7 @@ THRESH = {
     "nrfl_d":  (1.0,   0.5),
     "can_d":   (3.0,   1.0),
     "alco_d":  (24.0,  10.0),
+    "bust_d":  (3.0,   1.0),
     "consist": (80.0,  50.0),
 }
 
@@ -330,12 +332,14 @@ def compute_criminal_stats(conn: sqlite3.Connection) -> tuple:
         nrfl_d = d("nerverefills")
         can_d  = d("cantaken")
         alco_d = d("alcoholused")
+        bust_d = d("peoplebusted")
 
         raw = (
             nrv_d +
             nrfl_d * NERVE_PER_REFILL   +
             can_d  * NERVE_PER_CANNABIS +
-            alco_d * NERVE_PER_ALCOHOL
+            alco_d * NERVE_PER_ALCOHOL  +
+            bust_d * NERVE_PER_BUST
         )
 
         active_i, total_i = _get_consistency(conn, mid)
@@ -354,6 +358,7 @@ def compute_criminal_stats(conn: sqlite3.Connection) -> tuple:
             "nrfl_d":  nrfl_d,
             "can_d":   can_d,
             "alco_d":  alco_d,
+            "bust_d":  bust_d,
             "consist": consist_pct,
             "days":    days,
         }
@@ -365,14 +370,15 @@ def compute_criminal_stats(conn: sqlite3.Connection) -> tuple:
 
 _COLS = [
     ("#",      "rank",    0.05, lambda v: str(int(v))),
-    ("Name",   "name",    0.24, lambda v: v[:20] + "…" if len(v) > 20 else v),
+    ("Name",   "name",    0.22, lambda v: v[:18] + "…" if len(v) > 18 else v),
     ("Score",  "score",   0.10, lambda v: f"{v:.0f}"),
-    ("Nrv/d",  "nrv_d",   0.11, lambda v: f"{v:.0f}"),
-    ("NRfl/d", "nrfl_d",  0.10, lambda v: f"{v:.2f}"),
-    ("Can/d",  "can_d",   0.09, lambda v: f"{v:.2f}"),
-    ("Alco/d", "alco_d",  0.09, lambda v: f"{v:.1f}"),
-    ("Consist","consist", 0.10, lambda v: f"{v:.0f}%" if v is not None else "—"),
-    ("Window", "days",    0.12, lambda v: f"{v:.0f}d"),
+    ("Nrv/d",  "nrv_d",   0.10, lambda v: f"{v:.0f}"),
+    ("NRfl/d", "nrfl_d",  0.09, lambda v: f"{v:.2f}"),
+    ("Can/d",  "can_d",   0.08, lambda v: f"{v:.2f}"),
+    ("Alco/d", "alco_d",  0.08, lambda v: f"{v:.1f}"),
+    ("Bust/d", "bust_d",  0.08, lambda v: f"{v:.2f}"),
+    ("Consist","consist", 0.09, lambda v: f"{v:.0f}%" if v is not None else "—"),
+    ("Window", "days",    0.11, lambda v: f"{v:.0f}d"),
 ]
 
 
@@ -465,12 +471,12 @@ def render_image(rows: list[dict], period_label: str, output_path: str) -> None:
     ax.add_patch(patches.Rectangle((0, 0), 1, FOOT_H, fc=FOOT_BG, zorder=1))
     ax.plot([0, 1], [FOOT_H, FOOT_H], color=SEP, lw=0.8, zorder=3)
     ax.text(0.5, FOOT_H * 0.72,
-            f"Score = (CrimeNrv/d + NRfl/d×{NERVE_PER_REFILL}"
-            f" + Can/d×{NERVE_PER_CANNABIS} + Alco/d×{NERVE_PER_ALCOHOL}) × consistency",
+            f"Score = (CrimeNrv/d + NRfl/d×{NERVE_PER_REFILL} + Can/d×{NERVE_PER_CANNABIS}"
+            f" + Alco/d×{NERVE_PER_ALCOHOL} + Bust/d×{NERVE_PER_BUST}) × consistency",
             ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
     ax.text(0.5, FOOT_H * 0.28,
-            "Nrv=Nerve  NRfl=Nerve Refill  Can=Cannabis  Alco=Alcohol  Consist=Consistency",
+            "Nrv=Nerve  NRfl=Nerve Refill  Can=Cannabis  Alco=Alcohol  Bust=Busts  Consist=Consistency",
             ha="center", va="center", fontsize=9,
             color=DIM, fontfamily="monospace", zorder=2)
 
@@ -515,17 +521,17 @@ def main() -> None:
     print(f"\n{'='*76}")
     print(f"  Criminal Scoreboard  |  {period_label}")
     print(f"  Score = (CrimeNrv + NRfl×{NERVE_PER_REFILL} + Can×{NERVE_PER_CANNABIS}"
-          f" + Alco×{NERVE_PER_ALCOHOL}) × consistency  (all /day)")
-    print(f"{'='*76}")
+          f" + Alco×{NERVE_PER_ALCOHOL} + Bust×{NERVE_PER_BUST}) × consistency  (all /day)")
+    print(f"{'='*84}")
     print(f"  {'#':<4} {'Name':<22} {'Score':>7}  {'Nrv/d':>6} {'NRfl/d':>7}"
-          f" {'Can/d':>6} {'Alco/d':>7} {'Consist':>8}  {'Win':>5}")
-    print(f"  {'-'*72}")
+          f" {'Can/d':>6} {'Alco/d':>7} {'Bust/d':>7} {'Consist':>8}  {'Win':>5}")
+    print(f"  {'-'*80}")
     for row in ranked:
         consist_str = f"{row['consist']:.0f}%" if row["consist"] is not None else "—"
         print(
             f"  {row['rank']:<4} {row['name'][:21]:<22} {row['score']:>7.0f}"
             f"  {row['nrv_d']:>6.0f} {row['nrfl_d']:>7.2f}"
-            f" {row['can_d']:>6.2f} {row['alco_d']:>7.1f} {consist_str:>8}"
+            f" {row['can_d']:>6.2f} {row['alco_d']:>7.1f} {row['bust_d']:>7.2f} {consist_str:>8}"
             f"  {row['days']:>4.0f}d"
         )
     print(f"{'='*76}")
