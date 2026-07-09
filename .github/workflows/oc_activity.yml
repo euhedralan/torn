@@ -41,5 +41,5 @@ jobs:
           git add oc_activity.png
           git diff --staged --quiet || git commit -m "chore: update OC activity scoreboard [skip ci]"
           git fetch origin main
-          git rebase origin/main
+          git rebase origin/main -X ours
           git push
